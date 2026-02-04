@@ -7,23 +7,30 @@ import torch
 
 logger = logging.getLogger(__name__)
 
+# Check if GPU should be used
+USE_GPU = os.getenv("USE_GPU", "false").lower() == "true" and torch.cuda.is_available()
+DEVICE = "cuda" if USE_GPU else "cpu"
+COMPUTE_TYPE = "float16" if USE_GPU else "int8"
+
+logger.info(f"Using device: {DEVICE}")
+
 # Model configurations
 MODELS_CONFIG = {
     "faster-whisper": {
         "type": "faster-whisper",
         "model_size": "large-v3",
-        "device": "cuda" if torch.cuda.is_available() else "cpu",
-        "compute_type": "float16" if torch.cuda.is_available() else "int8",
+        "device": DEVICE,
+        "compute_type": COMPUTE_TYPE,
     },
     "whisper-taiwanese": {
         "type": "transformers",
         "model_name": "NUTN-KWS/Whisper-Taiwanese-model",
-        "device": "cuda" if torch.cuda.is_available() else "cpu",
+        "device": DEVICE,
     },
     "formospeech": {
         "type": "transformers",
         "model_name": "formospeech/whisper-large-v2-taiwanese-hakka",
-        "device": "cuda" if torch.cuda.is_available() else "cpu",
+        "device": DEVICE,
     },
 }
 

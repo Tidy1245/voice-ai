@@ -39,7 +39,7 @@ git pull origin main
 cd /MODULE/tidy/voice-ai/backend
 
 # 啟用虛擬環境
-source ~/miniconda3/envs/voice/bin/activate  # 或你的環境路徑
+conda activate voice
 
 # 啟動後端
 uvicorn app.main:app --host 0.0.0.0 --port 8000
