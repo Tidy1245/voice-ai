@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { TranscriptionResult } from '../types';
 import { DiffViewer } from './DiffViewer';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -9,6 +10,18 @@ interface ResultDisplayProps {
 
 export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
   const { t } = useLanguage();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!result?.transcription) return;
+    try {
+      await navigator.clipboard.writeText(result.transcription);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -51,18 +64,38 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
       {result.transcription && (
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigator.clipboard.writeText(result.transcription)}
-            className="text-sm text-gray-400 hover:text-white flex items-center gap-1.5 px-3 py-1.5 bg-dark-700 rounded-lg hover:bg-dark-600 transition-colors"
+            onClick={handleCopy}
+            className={`text-sm flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+              copied
+                ? 'bg-green-600/20 text-green-400 border border-green-600/30'
+                : 'text-gray-400 hover:text-white bg-dark-700 hover:bg-dark-600'
+            }`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-              />
-            </svg>
-            {t('result.copy')}
+            {copied ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                {t('result.copied')}
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                {t('result.copy')}
+              </>
+            )}
           </button>
         </div>
       )}

@@ -26,6 +26,13 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   const startRecording = useCallback(async () => {
     try {
       setError(null);
+
+      // Check if mediaDevices is available (requires secure context)
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('HTTPS_REQUIRED');
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       const mediaRecorder = new MediaRecorder(stream, {
@@ -64,8 +71,18 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
         setDuration(Math.floor((Date.now() - startTimeRef.current) / 1000));
       }, 1000);
     } catch (err) {
-      setError('Failed to access microphone. Please ensure microphone permissions are granted.');
       console.error('Recording error:', err);
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setError('PERMISSION_DENIED');
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          setError('NO_MICROPHONE');
+        } else {
+          setError('GENERIC_ERROR');
+        }
+      } else {
+        setError('GENERIC_ERROR');
+      }
     }
   }, []);
 

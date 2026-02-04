@@ -100,6 +100,10 @@ const translations: Translations = {
     zh: '複製',
     en: 'Copy',
   },
+  'result.copied': {
+    zh: '已複製',
+    en: 'Copied!',
+  },
   'result.noSpeech': {
     zh: '未偵測到語音',
     en: 'No speech detected',
@@ -170,6 +174,22 @@ const translations: Translations = {
   'error.microphoneDenied': {
     zh: '無法存取麥克風，請確認已授予麥克風權限',
     en: 'Failed to access microphone. Please ensure microphone permissions are granted.',
+  },
+  'error.httpsRequired': {
+    zh: '錄音功能需要 HTTPS 安全連線。請使用 HTTPS 或透過 localhost 存取網站。',
+    en: 'Recording requires a secure connection (HTTPS). Please access the site via HTTPS or localhost.',
+  },
+  'error.noMicrophone': {
+    zh: '找不到麥克風裝置，請確認麥克風已正確連接',
+    en: 'No microphone found. Please ensure a microphone is connected.',
+  },
+  'error.microphoneGeneric': {
+    zh: '存取麥克風時發生錯誤，請重試',
+    en: 'An error occurred while accessing the microphone. Please try again.',
+  },
+  'error.tryAgain': {
+    zh: '重試',
+    en: 'Try again',
   },
 };
 

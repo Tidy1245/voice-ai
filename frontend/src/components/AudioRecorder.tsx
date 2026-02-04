@@ -32,10 +32,29 @@ export function AudioRecorder({ onRecordingComplete, disabled }: AudioRecorderPr
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getErrorMessage = (errorCode: string): string => {
+    switch (errorCode) {
+      case 'HTTPS_REQUIRED':
+        return t('error.httpsRequired');
+      case 'PERMISSION_DENIED':
+        return t('error.microphoneDenied');
+      case 'NO_MICROPHONE':
+        return t('error.noMicrophone');
+      default:
+        return t('error.microphoneGeneric');
+    }
+  };
+
   if (error) {
     return (
-      <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-red-300 text-sm">
-        {t('error.microphoneDenied')}
+      <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 space-y-2">
+        <p className="text-red-300 text-sm">{getErrorMessage(error)}</p>
+        <button
+          onClick={clearRecording}
+          className="text-xs text-red-400 hover:text-red-300 underline"
+        >
+          {t('error.tryAgain')}
+        </button>
       </div>
     );
   }
