@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { LanguageSwitch } from './components/LanguageSwitch';
 import { ModelSelector } from './components/ModelSelector';
@@ -28,6 +28,13 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [historyRefresh, setHistoryRefresh] = useState(0);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  const scrollToResult = useCallback(() => {
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, []);
 
   useEffect(() => {
     getModels()
@@ -45,6 +52,7 @@ function AppContent() {
     setError(null);
     setIsLoading(true);
     setResult(null);
+    scrollToResult();
 
     try {
       const response = await transcribe(
@@ -79,6 +87,7 @@ function AppContent() {
     if (record.reference_text) {
       setReferenceText(record.reference_text);
     }
+    scrollToResult();
   };
 
   const hasAudio = inputMode === 'upload' ? !!selectedFile : !!recordedBlob;
@@ -213,7 +222,9 @@ function AppContent() {
             )}
 
             {/* Result */}
-            <ResultDisplay result={result} isLoading={isLoading} />
+            <div ref={resultRef}>
+              <ResultDisplay result={result} isLoading={isLoading} />
+            </div>
           </div>
 
           {/* Right Panel - History */}
