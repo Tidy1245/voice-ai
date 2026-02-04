@@ -43,6 +43,7 @@ conda activate voice
 
 # 啟動後端
 uvicorn app.main:app --host 0.0.0.0 --port 8000
+USE_GPU=true uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 # 背景執行 (可關閉終端)
 nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &

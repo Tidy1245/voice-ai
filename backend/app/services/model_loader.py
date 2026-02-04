@@ -29,7 +29,7 @@ MODELS_CONFIG = {
     },
     "formospeech": {
         "type": "transformers",
-        "model_name": "formospeech/whisper-large-v2-taiwanese-hakka",
+        "model_name": "formospeech/whisper-large-v3-taiwanese-hakka",
         "device": DEVICE,
     },
 }
