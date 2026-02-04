@@ -78,3 +78,15 @@ async def delete_history(
         raise HTTPException(status_code=404, detail="Record not found")
 
     return {"success": True, "message": "Record deleted"}
+
+
+@router.delete("/history")
+async def clear_all_history(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete all transcription records.
+    """
+    service = HistoryService(db)
+    count = await service.delete_all_records()
+    return {"success": True, "message": f"Deleted {count} records", "count": count}

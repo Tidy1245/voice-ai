@@ -1,5 +1,6 @@
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AudioRecorderProps {
   onRecordingComplete: (blob: Blob) => void;
@@ -7,6 +8,7 @@ interface AudioRecorderProps {
 }
 
 export function AudioRecorder({ onRecordingComplete, disabled }: AudioRecorderProps) {
+  const { t } = useLanguage();
   const {
     isRecording,
     audioBlob,
@@ -33,7 +35,7 @@ export function AudioRecorder({ onRecordingComplete, disabled }: AudioRecorderPr
   if (error) {
     return (
       <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-red-300 text-sm">
-        {error}
+        {t('error.microphoneDenied')}
       </div>
     );
   }
@@ -59,8 +61,8 @@ export function AudioRecorder({ onRecordingComplete, disabled }: AudioRecorderPr
               </svg>
             </div>
             <div>
-              <p className="text-white font-medium">Recording Complete</p>
-              <p className="text-sm text-gray-400">Duration: {formatDuration(duration)}</p>
+              <p className="text-white font-medium">{t('audio.recordingComplete')}</p>
+              <p className="text-sm text-gray-400">{t('audio.duration')}: {formatDuration(duration)}</p>
             </div>
           </div>
           <button
@@ -123,11 +125,11 @@ export function AudioRecorder({ onRecordingComplete, disabled }: AudioRecorderPr
       <div className="text-center">
         {isRecording ? (
           <>
-            <p className="text-red-400 font-medium">Recording...</p>
+            <p className="text-red-400 font-medium">{t('audio.recording')}</p>
             <p className="text-2xl font-mono text-white mt-1">{formatDuration(duration)}</p>
           </>
         ) : (
-          <p className="text-gray-400">Click to start recording</p>
+          <p className="text-gray-400">{t('audio.clickToRecord')}</p>
         )}
       </div>
     </div>

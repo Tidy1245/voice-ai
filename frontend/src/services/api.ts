@@ -67,6 +67,16 @@ export async function deleteHistory(id: number): Promise<void> {
   }
 }
 
+export async function clearAllHistory(): Promise<{ count: number }> {
+  const response = await fetch(`${API_BASE}/history`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to clear history');
+  }
+  return response.json();
+}
+
 export async function checkHealth(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE}/health`);

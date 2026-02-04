@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { HistoryRecord } from '../types';
-import { getHistory, deleteHistory } from '../services/api';
+import { getHistory, deleteHistory, clearAllHistory } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface HistoryPanelProps {
   onSelectRecord: (record: HistoryRecord) => void;
@@ -8,6 +9,7 @@ interface HistoryPanelProps {
 }
 
 export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelProps) {
+  const { t, language } = useLanguage();
   const [records, setRecords] = useState<HistoryRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +40,7 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
 
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this record?')) return;
+    if (!confirm(t('history.confirmDelete'))) return;
 
     try {
       await deleteHistory(id);
@@ -46,6 +48,19 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
       setTotal((prev) => prev - 1);
     } catch (error) {
       console.error('Failed to delete record:', error);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm(t('history.confirmClearAll'))) return;
+
+    try {
+      await clearAllHistory();
+      setRecords([]);
+      setTotal(0);
+      setOffset(0);
+    } catch (error) {
+      console.error('Failed to clear history:', error);
     }
   };
 
@@ -61,12 +76,18 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return t('history.justNow');
+    if (language === 'zh') {
+      if (diffMins < 60) return `${diffMins} 分鐘前`;
+      if (diffHours < 24) return `${diffHours} 小時前`;
+      if (diffDays < 7) return `${diffDays} 天前`;
+    } else {
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+    }
 
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US', {
       month: 'short',
       day: 'numeric',
     });
@@ -88,9 +109,18 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">History</h2>
-        <span className="text-sm text-gray-500">{total} records</span>
+        <h2 className="text-lg font-semibold text-white">{t('history.title')}</h2>
+        <span className="text-sm text-gray-500">{total} {t('history.records')}</span>
       </div>
+
+      {records.length > 0 && (
+        <button
+          onClick={handleClearAll}
+          className="mb-3 w-full py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors border border-red-400/30 hover:border-red-400/50"
+        >
+          {t('history.clearAll')}
+        </button>
+      )}
 
       <div className="flex-1 overflow-y-auto space-y-2 pr-1 -mr-1">
         {records.length === 0 && !isLoading ? (
@@ -108,7 +138,7 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-            <p className="text-gray-500 text-sm">No history yet</p>
+            <p className="text-gray-500 text-sm">{t('history.empty')}</p>
           </div>
         ) : (
           records.map((record) => (
@@ -160,7 +190,7 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
             onClick={handleLoadMore}
             className="w-full py-2 text-sm text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
           >
-            Load more
+            {t('history.loadMore')}
           </button>
         )}
       </div>

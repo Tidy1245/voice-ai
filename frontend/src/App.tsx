@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { LanguageSwitch } from './components/LanguageSwitch';
 import { ModelSelector } from './components/ModelSelector';
 import { AudioUploader } from './components/AudioUploader';
 import { AudioRecorder } from './components/AudioRecorder';
@@ -14,7 +16,8 @@ const defaultModels: Model[] = [
   { id: 'formospeech', name: 'FormoSpeech Hakka', description: 'Specialized for Hakka language' },
 ];
 
-function App() {
+function AppContent() {
+  const { t } = useLanguage();
   const [models, setModels] = useState<Model[]>(defaultModels);
   const [selectedModel, setSelectedModel] = useState<ModelId>('faster-whisper');
   const [inputMode, setInputMode] = useState<InputMode>('upload');
@@ -35,7 +38,7 @@ function App() {
   const handleTranscribe = async () => {
     const audio = inputMode === 'upload' ? selectedFile : recordedBlob;
     if (!audio) {
-      setError('Please select or record an audio file');
+      setError(t('error.selectAudio'));
       return;
     }
 
@@ -85,17 +88,20 @@ function App() {
       {/* Header */}
       <header className="border-b border-dark-700 bg-dark-800/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-blue-600 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-              </svg>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-blue-600 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">Voice AI</h1>
+                <p className="text-sm text-gray-400">{t('header.subtitle')}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Voice AI</h1>
-              <p className="text-sm text-gray-400">Speech Recognition System</p>
-            </div>
+            <LanguageSwitch />
           </div>
         </div>
       </header>
@@ -129,7 +135,7 @@ function App() {
                       : 'bg-dark-700 text-gray-400 hover:text-white'
                   }`}
                 >
-                  Upload File
+                  {t('audio.upload')}
                 </button>
                 <button
                   onClick={() => {
@@ -142,7 +148,7 @@ function App() {
                       : 'bg-dark-700 text-gray-400 hover:text-white'
                   }`}
                 >
-                  Record Audio
+                  {t('audio.record')}
                 </button>
               </div>
 
@@ -176,7 +182,7 @@ function App() {
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing...
+                  {t('transcribe.processing')}
                 </>
               ) : (
                 <>
@@ -194,7 +200,7 @@ function App() {
                       d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  Start Transcription
+                  {t('transcribe.start')}
                 </>
               )}
             </button>
@@ -219,6 +225,14 @@ function App() {
         </div>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 

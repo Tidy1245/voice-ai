@@ -1,5 +1,6 @@
 import type { TranscriptionResult } from '../types';
 import { DiffViewer } from './DiffViewer';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ResultDisplayProps {
   result: TranscriptionResult | null;
@@ -7,6 +8,8 @@ interface ResultDisplayProps {
 }
 
 export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
+  const { t } = useLanguage();
+
   if (isLoading) {
     return (
       <div className="card">
@@ -15,8 +18,8 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
             <div className="w-12 h-12 border-4 border-dark-600 border-t-violet-500 rounded-full animate-spin" />
           </div>
           <div className="text-center">
-            <p className="text-gray-300 font-medium">Processing audio...</p>
-            <p className="text-sm text-gray-500 mt-1">This may take a moment</p>
+            <p className="text-gray-300 font-medium">{t('result.processing')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('result.wait')}</p>
           </div>
         </div>
       </div>
@@ -30,7 +33,7 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
   return (
     <div className="card space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">Transcription Result</h3>
+        <h3 className="text-lg font-semibold text-white">{t('result.title')}</h3>
         <div className="flex items-center gap-2 text-sm">
           <span className="px-2 py-1 bg-violet-600/20 text-violet-300 rounded text-xs font-medium">
             {result.model_used}
@@ -41,7 +44,7 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
 
       <div className="bg-dark-700 rounded-lg p-4 border border-dark-600">
         <p className="font-mono text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">
-          {result.transcription || <span className="text-gray-500 italic">No speech detected</span>}
+          {result.transcription || <span className="text-gray-500 italic">{t('result.noSpeech')}</span>}
         </p>
       </div>
 
@@ -59,7 +62,7 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
               />
             </svg>
-            Copy
+            {t('result.copy')}
           </button>
         </div>
       )}

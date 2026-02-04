@@ -1,4 +1,5 @@
 import type { Model, ModelId } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ModelSelectorProps {
   models: Model[];
@@ -8,10 +9,17 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ models, selectedModel, onSelect, disabled }: ModelSelectorProps) {
+  const { t } = useLanguage();
+
+  const getModelDescription = (modelId: string): string => {
+    const key = `model.${modelId}.desc`;
+    return t(key);
+  };
+
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-gray-300">
-        Select Speech Recognition Model
+        {t('model.select')}
       </label>
       <div className="flex flex-wrap gap-3">
         {models.map((model) => (
@@ -28,7 +36,7 @@ export function ModelSelector({ models, selectedModel, onSelect, disabled }: Mod
               }
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
-            title={model.description}
+            title={getModelDescription(model.id)}
           >
             {model.name}
           </button>
@@ -36,7 +44,7 @@ export function ModelSelector({ models, selectedModel, onSelect, disabled }: Mod
       </div>
       {models.length > 0 && (
         <p className="text-xs text-gray-500">
-          {models.find((m) => m.id === selectedModel)?.description}
+          {getModelDescription(selectedModel)}
         </p>
       )}
     </div>

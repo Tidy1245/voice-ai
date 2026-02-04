@@ -67,3 +67,9 @@ class HistoryService:
         query = delete(TranscriptionRecord).where(TranscriptionRecord.id == record_id)
         result = await self.db.execute(query)
         return result.rowcount > 0
+
+    async def delete_all_records(self) -> int:
+        """Delete all records."""
+        query = delete(TranscriptionRecord)
+        result = await self.db.execute(query)
+        return result.rowcount

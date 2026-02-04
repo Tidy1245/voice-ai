@@ -1,4 +1,5 @@
 import { useCallback, useState, useRef } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AudioUploaderProps {
   onFileSelect: (file: File) => void;
@@ -8,6 +9,7 @@ interface AudioUploaderProps {
 }
 
 export function AudioUploader({ onFileSelect, selectedFile, onClear, disabled }: AudioUploaderProps) {
+  const { t } = useLanguage();
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,10 +153,10 @@ export function AudioUploader({ onFileSelect, selectedFile, onClear, disabled }:
         </div>
         <div>
           <p className="text-gray-300 font-medium">
-            Drop audio file here or click to browse
+            {t('audio.drop')}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            Supports WAV, MP3, M4A, WebM, OGG, FLAC
+            {t('audio.formats')}
           </p>
         </div>
       </div>
