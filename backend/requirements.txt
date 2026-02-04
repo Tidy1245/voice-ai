@@ -1,0 +1,22 @@
+# FastAPI and server
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+
+# Database
+sqlalchemy==2.0.35
+aiosqlite==0.20.0
+
+# Speech recognition models
+faster-whisper==1.0.3
+transformers==4.45.2
+torch==2.4.1
+torchaudio==2.4.1
+
+# Audio processing
+pydub==0.25.1
+soundfile==0.12.1
+numpy==1.26.4
+
+# Utilities
+python-dotenv==1.0.1

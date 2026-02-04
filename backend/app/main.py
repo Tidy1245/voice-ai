@@ -1,0 +1,56 @@
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .models.database import init_db
+from .routers import transcription_router, history_router
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger.info("Starting Voice AI server...")
+    await init_db()
+    logger.info("Database initialized")
+    yield
+    # Shutdown
+    logger.info("Shutting down Voice AI server...")
+
+
+app = FastAPI(
+    title="Voice AI API",
+    description="Speech recognition API supporting multiple models",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(transcription_router, prefix="/api", tags=["transcription"])
+app.include_router(history_router, prefix="/api", tags=["history"])
+
+
+@app.get("/")
+async def root():
+    return {
+        "name": "Voice AI API",
+        "version": "1.0.0",
+        "docs": "/docs",
+    }

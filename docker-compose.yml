@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ""
+    ports:
+      - "9010:80"
+    depends_on:
+      - backend
+    networks:
+      - voice-ai-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    volumes:
+      - model-cache:/app/model_cache
+      - db-data:/app/data
+    environment:
+      - MODEL_CACHE_DIR=/app/model_cache
+      - DATABASE_URL=sqlite+aiosqlite:///./data/voice_ai.db
+      - CUDA_VISIBLE_DEVICES=0
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - voice-ai-network
+    restart: unless-stopped
+
+networks:
+  voice-ai-network:
+    driver: bridge
+
+volumes:
+  model-cache:
+  db-data:
