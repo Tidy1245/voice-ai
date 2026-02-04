@@ -24,7 +24,7 @@ MODELS_CONFIG = {
     },
     "whisper-taiwanese": {
         "type": "transformers",
-        "model_name": "NUTN-KWS/Whisper-Taiwanese-model",
+        "model_name": "JacobLinCool/whisper-large-v3-turbo-common_voice_19_0-zh-TW",
         "device": DEVICE,
     },
     "formospeech": {
@@ -43,7 +43,7 @@ MODEL_INFO = {
     "whisper-taiwanese": {
         "id": "whisper-taiwanese",
         "name": "Whisper Taiwanese",
-        "description": "Optimized for Taiwanese/Mandarin",
+        "description": "Optimized for Traditional Chinese (Taiwan)",
     },
     "formospeech": {
         "id": "formospeech",
