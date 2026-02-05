@@ -59,6 +59,9 @@ npx vite --host --port 9010
 
 # 背景執行
 nohup npx vite --host --port 9010 > frontend.log 2>&1 &
+
+npm run dev -- --host --port 9010
+
 ```
 
 ---
