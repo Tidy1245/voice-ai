@@ -55,8 +55,8 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
         </div>
       </div>
 
-      <div className="bg-dark-700 rounded-lg p-4 border border-dark-600">
-        <p className="font-mono text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">
+      <div className="bg-dark-700 rounded-lg p-4 border border-dark-600 max-w-full overflow-hidden">
+        <p className="font-mono text-sm text-gray-200 leading-relaxed whitespace-pre-wrap break-words">
           {result.transcription || <span className="text-gray-500 italic">{t('result.noSpeech')}</span>}
         </p>
       </div>

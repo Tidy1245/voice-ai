@@ -31,7 +31,8 @@ export function TranscriptInput({ value, onChange, disabled }: TranscriptInputPr
         disabled={disabled}
         placeholder={t('reference.placeholder')}
         rows={4}
-        className="textarea-dark"
+        className="textarea-dark break-words"
+        style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
       />
       <p className="text-xs text-gray-500">
         {t('reference.hint')}

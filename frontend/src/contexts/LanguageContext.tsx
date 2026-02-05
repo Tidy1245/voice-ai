@@ -183,6 +183,10 @@ const translations: Translations = {
     zh: '差異',
     en: 'Different',
   },
+  'diff.similarity': {
+    zh: '相似度',
+    en: 'Similarity',
+  },
   // History
   'history.title': {
     zh: '歷史記錄',
