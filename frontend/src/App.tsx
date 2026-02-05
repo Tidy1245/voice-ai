@@ -146,7 +146,7 @@ function AppContent() {
       <main className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex gap-6">
           {/* Left Panel - Main Controls */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 min-w-0 space-y-6">
             {/* Model Selection */}
             <div className="card">
               <ModelSelector

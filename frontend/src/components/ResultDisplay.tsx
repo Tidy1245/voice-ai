@@ -44,7 +44,7 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
   }
 
   return (
-    <div className="card space-y-4">
+    <div className="card space-y-4 overflow-hidden">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">{t('result.title')}</h3>
         <div className="flex items-center gap-2 text-sm">

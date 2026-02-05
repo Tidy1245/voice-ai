@@ -69,7 +69,9 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
+    // Backend stores UTC time without 'Z' suffix, add it for correct parsing
+    const utcDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+    const date = new Date(utcDateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
