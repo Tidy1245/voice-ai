@@ -73,19 +73,43 @@ class TranscriptionService:
         config: Dict,
     ) -> str:
         """Transcribe using HuggingFace transformers model."""
-        # Prepare input
-        input_features = processor(
+        # Prepare input with attention mask
+        inputs = processor(
             audio_data,
             sampling_rate=16000,
             return_tensors="pt",
-        ).input_features
+            return_attention_mask=True,
+        )
+
+        input_features = inputs.input_features
+        attention_mask = inputs.get("attention_mask", None)
 
         if config["device"] == "cuda":
             input_features = input_features.cuda()
+            if attention_mask is not None:
+                attention_mask = attention_mask.cuda()
+
+        # Determine language based on model
+        model_name = config.get("model_name", "")
+        if "taiwanese" in model_name.lower() or "zh-TW" in model_name:
+            language = "zh"
+        elif "hakka" in model_name.lower():
+            language = "zh"  # Hakka uses Chinese tokens
+        else:
+            language = None  # Auto-detect
 
         # Generate transcription
         with torch.no_grad():
-            predicted_ids = model.generate(input_features)
+            generate_kwargs = {
+                "input_features": input_features,
+                "task": "transcribe",
+            }
+            if attention_mask is not None:
+                generate_kwargs["attention_mask"] = attention_mask
+            if language:
+                generate_kwargs["language"] = language
+
+            predicted_ids = model.generate(**generate_kwargs)
 
         transcription = processor.batch_decode(
             predicted_ids,
