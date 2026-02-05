@@ -32,7 +32,7 @@ voice-ai/
 └── CLAUDE.md           # This file
 ```
 
-## Server Deployment (192.168.0.28)
+## Server Deployment (192.168.0.19)
 
 ### Prerequisites
 
@@ -64,7 +64,7 @@ cd /MODULE/tidy/voice-ai/frontend
 npm install
 
 # Create environment file
-echo "VITE_API_URL=http://192.168.0.28:8000/api" > .env
+echo "VITE_API_URL=http://192.168.0.19:8000/api" > .env
 
 # Start frontend
 npx vite --host --port 9010
@@ -74,9 +74,9 @@ npx vite --host --port 9010
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://192.168.0.28:9010 |
-| Backend API | http://192.168.0.28:8000 |
-| API Docs | http://192.168.0.28:8000/docs |
+| Frontend | http://192.168.0.19:9010 |
+| Backend API | http://192.168.0.19:8000 |
+| API Docs | http://192.168.0.19:8000/docs |
 
 ## API Endpoints
 

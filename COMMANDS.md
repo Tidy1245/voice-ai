@@ -28,7 +28,7 @@ git commit -m "更新說明"
 git push origin main
 ```
 
-### 伺服器 (192.168.0.28)
+### 伺服器 (192.168.0.19)
 
 ```bash
 cd /MODULE/tidy/voice-ai
@@ -143,9 +143,9 @@ tail -f /MODULE/tidy/voice-ai/frontend/frontend.log
 
 | 服務 | URL |
 |------|-----|
-| 前端 | http://192.168.0.28:9010 |
-| 後端 API | http://192.168.0.28:8000 |
-| API 文件 | http://192.168.0.28:8000/docs |
+| 前端 | http://192.168.0.19:9010 |
+| 後端 API | http://192.168.0.19:8000 |
+| API 文件 | http://192.168.0.19:8000/docs |
 
 ---
 
