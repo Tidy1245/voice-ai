@@ -18,13 +18,12 @@ if USE_GPU:
         logger.info("GPU mode requested but CUDA not available - falling back to CPU")
 else:
     logger.info("CPU mode enabled (default)")
+    # Ensure torch is in CPU-only mode
+    import torch
+    torch.set_default_device("cpu")
 
 DEVICE = "cuda" if USE_GPU else "cpu"
 COMPUTE_TYPE = "float16" if USE_GPU else "int8"
-
-# Force CPU mode by disabling CUDA visibility if not using GPU
-if not USE_GPU:
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 logger.info(f"Using device: {DEVICE}, compute_type: {COMPUTE_TYPE}")
 

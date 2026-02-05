@@ -6,6 +6,12 @@ from contextlib import asynccontextmanager
 # Must be set before importing torch or any ML libraries
 if os.getenv("USE_GPU", "false").lower() != "true":
     os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    # Force PyTorch to use CPU
+    import torch
+    torch.set_default_device("cpu")
+    # Monkey-patch to prevent any CUDA usage
+    torch.cuda.is_available = lambda: False
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
