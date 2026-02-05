@@ -114,19 +114,33 @@ class ModelLoader:
         return model
 
     def _load_transformers(self, config: Dict[str, Any]):
+        import torch
         from transformers import WhisperProcessor, WhisperForConditionalGeneration
+
+        device = config["device"]
+        logger.info(f"Loading transformers model on device: {device}")
 
         processor = WhisperProcessor.from_pretrained(
             config["model_name"],
             cache_dir=self._cache_dir,
         )
-        model = WhisperForConditionalGeneration.from_pretrained(
-            config["model_name"],
-            cache_dir=self._cache_dir,
-        )
 
-        if config["device"] == "cuda":
-            model = model.cuda()
+        # Explicitly set device and dtype to avoid CUDA issues
+        if device == "cpu":
+            model = WhisperForConditionalGeneration.from_pretrained(
+                config["model_name"],
+                cache_dir=self._cache_dir,
+                torch_dtype=torch.float32,
+                low_cpu_mem_usage=True,
+            )
+            model = model.to("cpu")
+        else:
+            model = WhisperForConditionalGeneration.from_pretrained(
+                config["model_name"],
+                cache_dir=self._cache_dir,
+                torch_dtype=torch.float16,
+                device_map="auto",
+            )
 
         return model, processor
 

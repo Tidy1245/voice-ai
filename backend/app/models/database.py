@@ -49,6 +49,18 @@ class User(Base):
         }
 
 
+class SessionToken(Base):
+    __tablename__ = "session_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String(64), unique=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+
+    user = relationship("User")
+
+
 class TranscriptionRecord(Base):
     __tablename__ = "transcription_records"
 

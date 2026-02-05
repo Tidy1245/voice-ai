@@ -24,6 +24,7 @@ async def transcribe_audio(
     """
     Transcribe an uploaded audio file.
     """
+    logger.info(f"Transcription request - user_id: {user_id}")
     # Validate model
     model_loader = get_model_loader()
     available_models = [m["id"] for m in model_loader.get_available_models()]

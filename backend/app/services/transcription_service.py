@@ -39,7 +39,8 @@ class TranscriptionService:
         # Resample to 16kHz if needed (Whisper requires 16kHz)
         if sample_rate != 16000:
             import torchaudio
-            audio_tensor = torch.tensor(audio_data).float().unsqueeze(0)
+            # Explicitly use CPU for resampling
+            audio_tensor = torch.tensor(audio_data, device="cpu").float().unsqueeze(0)
             resampler = torchaudio.transforms.Resample(sample_rate, 16000)
             audio_data = resampler(audio_tensor).squeeze().numpy()
 
@@ -73,6 +74,8 @@ class TranscriptionService:
         config: Dict,
     ) -> str:
         """Transcribe using HuggingFace transformers model."""
+        device = config["device"]
+
         # Prepare input with attention mask
         inputs = processor(
             audio_data,
@@ -84,10 +87,10 @@ class TranscriptionService:
         input_features = inputs.input_features
         attention_mask = inputs.get("attention_mask", None)
 
-        if config["device"] == "cuda":
-            input_features = input_features.cuda()
-            if attention_mask is not None:
-                attention_mask = attention_mask.cuda()
+        # Explicitly move tensors to the correct device
+        input_features = input_features.to(device)
+        if attention_mask is not None:
+            attention_mask = attention_mask.to(device)
 
         # Determine language based on model
         model_name = config.get("model_name", "")

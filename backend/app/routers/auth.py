@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Header
@@ -7,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.database import get_db
 from ..services.auth_service import AuthService
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -29,14 +31,20 @@ class UserResponse(BaseModel):
 
 async def get_current_user_id(
     authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db),
 ) -> Optional[int]:
     """Extract user ID from authorization header."""
     if not authorization:
+        logger.debug("No authorization header")
         return None
     if not authorization.startswith("Bearer "):
+        logger.debug(f"Invalid authorization header format: {authorization[:20]}...")
         return None
     token = authorization[7:]
-    return AuthService.validate_token(token)
+    service = AuthService(db)
+    user_id = await service.validate_token(token)
+    logger.debug(f"Token validation result - user_id: {user_id}")
+    return user_id
 
 
 async def require_auth(
@@ -63,7 +71,7 @@ async def login(
             message="Invalid username or password",
         )
 
-    token = service.create_token(user.id)
+    token = await service.create_token(user.id)
     return LoginResponse(
         success=True,
         token=token,
@@ -74,11 +82,13 @@ async def login(
 @router.post("/logout")
 async def logout(
     authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db),
 ):
     """Logout and invalidate token."""
     if authorization and authorization.startswith("Bearer "):
         token = authorization[7:]
-        AuthService.invalidate_token(token)
+        service = AuthService(db)
+        await service.invalidate_token(token)
     return {"success": True}
 
 

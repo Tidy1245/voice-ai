@@ -1,15 +1,14 @@
 import secrets
+import logging
 from typing import Optional
 from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.database import User, hash_password, verify_password
+from ..models.database import User, SessionToken, hash_password, verify_password
 
-
-# Simple token storage (in production, use Redis or database)
-active_tokens: dict[str, dict] = {}
+logger = logging.getLogger(__name__)
 
 
 class AuthService:
@@ -50,34 +49,51 @@ class AuthService:
             return None
         return user
 
-    def create_token(self, user_id: int) -> str:
-        """Create a session token for user."""
+    async def create_token(self, user_id: int) -> str:
+        """Create a session token for user (stored in database)."""
         token = secrets.token_urlsafe(32)
-        active_tokens[token] = {
-            "user_id": user_id,
-            "created_at": datetime.utcnow(),
-            "expires_at": datetime.utcnow() + timedelta(days=7),
-        }
+        expires_at = datetime.utcnow() + timedelta(days=7)
+
+        session_token = SessionToken(
+            token=token,
+            user_id=user_id,
+            expires_at=expires_at,
+        )
+        self.db.add(session_token)
+        await self.db.flush()
+
+        logger.info(f"Created token for user_id: {user_id}")
         return token
 
-    @staticmethod
-    def validate_token(token: str) -> Optional[int]:
+    async def validate_token(self, token: str) -> Optional[int]:
         """Validate token and return user_id if valid."""
-        if token not in active_tokens:
-            return None
-        token_data = active_tokens[token]
-        if datetime.utcnow() > token_data["expires_at"]:
-            del active_tokens[token]
-            return None
-        return token_data["user_id"]
+        query = select(SessionToken).where(SessionToken.token == token)
+        result = await self.db.execute(query)
+        session_token = result.scalar_one_or_none()
 
-    @staticmethod
-    def invalidate_token(token: str) -> bool:
+        if session_token is None:
+            logger.debug(f"Token not found in database")
+            return None
+
+        if datetime.utcnow() > session_token.expires_at:
+            # Token expired, delete it
+            await self.db.execute(
+                delete(SessionToken).where(SessionToken.token == token)
+            )
+            await self.db.flush()
+            logger.debug(f"Token expired for user_id: {session_token.user_id}")
+            return None
+
+        logger.debug(f"Token valid for user_id: {session_token.user_id}")
+        return session_token.user_id
+
+    async def invalidate_token(self, token: str) -> bool:
         """Invalidate (logout) a token."""
-        if token in active_tokens:
-            del active_tokens[token]
-            return True
-        return False
+        result = await self.db.execute(
+            delete(SessionToken).where(SessionToken.token == token)
+        )
+        await self.db.flush()
+        return result.rowcount > 0
 
 
 async def init_default_user(db: AsyncSession):
