@@ -3,16 +3,30 @@ import logging
 from typing import Dict, Any, Optional
 from functools import lru_cache
 
-import torch
-
 logger = logging.getLogger(__name__)
 
-# Check if GPU should be used
-USE_GPU = os.getenv("USE_GPU", "false").lower() == "true" and torch.cuda.is_available()
+# Check if GPU should be used - default to CPU for stability
+USE_GPU = os.getenv("USE_GPU", "false").lower() == "true"
+
+# Only check CUDA availability if USE_GPU is explicitly enabled
+if USE_GPU:
+    import torch
+    USE_GPU = USE_GPU and torch.cuda.is_available()
+    if USE_GPU:
+        logger.info("GPU mode enabled - using CUDA")
+    else:
+        logger.info("GPU mode requested but CUDA not available - falling back to CPU")
+else:
+    logger.info("CPU mode enabled (default)")
+
 DEVICE = "cuda" if USE_GPU else "cpu"
 COMPUTE_TYPE = "float16" if USE_GPU else "int8"
 
-logger.info(f"Using device: {DEVICE}")
+# Force CPU mode by disabling CUDA visibility if not using GPU
+if not USE_GPU:
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+logger.info(f"Using device: {DEVICE}, compute_type: {COMPUTE_TYPE}")
 
 # Model configurations
 MODELS_CONFIG = {
@@ -127,7 +141,9 @@ class ModelLoader:
             del self._models[model_id]
             if model_id in self._processors:
                 del self._processors[model_id]
-            torch.cuda.empty_cache()
+            if USE_GPU:
+                import torch
+                torch.cuda.empty_cache()
             logger.info(f"Model {model_id} unloaded")
 
 

@@ -1,5 +1,11 @@
+import os
 import logging
 from contextlib import asynccontextmanager
+
+# Disable CUDA by default unless explicitly enabled
+# Must be set before importing torch or any ML libraries
+if os.getenv("USE_GPU", "false").lower() != "true":
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
