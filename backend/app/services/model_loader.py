@@ -131,7 +131,6 @@ class ModelLoader:
                 config["model_name"],
                 cache_dir=self._cache_dir,
                 torch_dtype=torch.float32,
-                low_cpu_mem_usage=True,
             )
             model = model.to("cpu")
         else:
@@ -139,8 +138,8 @@ class ModelLoader:
                 config["model_name"],
                 cache_dir=self._cache_dir,
                 torch_dtype=torch.float16,
-                device_map="auto",
             )
+            model = model.cuda()
 
         return model, processor
 
