@@ -12,6 +12,19 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
+  const getModelBadgeColor = (model: string): string => {
+    switch (model) {
+      case 'faster-whisper':
+        return 'bg-blue-600/20 text-blue-300';
+      case 'whisper-taiwanese':
+        return 'bg-green-600/20 text-green-300';
+      case 'formospeech':
+        return 'bg-orange-600/20 text-orange-300';
+      default:
+        return 'bg-violet-600/20 text-violet-300';
+    }
+  };
+
   const handleCopy = async () => {
     if (!result?.transcription) return;
     try {
@@ -48,8 +61,8 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">{t('result.title')}</h3>
         <div className="flex items-center gap-2 text-sm">
-          <span className="px-2 py-1 bg-violet-600/20 text-violet-300 rounded text-xs font-medium">
-            {result.model_used}
+          <span className={`px-2 py-1 rounded text-xs font-medium ${getModelBadgeColor(result.model_used)}`}>
+            {result.model_used.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
           </span>
           <span className="text-gray-500">{result.duration.toFixed(1)}s</span>
         </div>
