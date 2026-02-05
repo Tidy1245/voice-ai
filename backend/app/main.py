@@ -4,8 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models.database import init_db
+from .models.database import init_db, async_session
 from .routers import transcription_router, history_router
+from .routers.auth import router as auth_router
+from .services.auth_service import init_default_user
 
 # Configure logging
 logging.basicConfig(
@@ -21,6 +23,12 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Voice AI server...")
     await init_db()
     logger.info("Database initialized")
+
+    # Create default user
+    async with async_session() as db:
+        await init_default_user(db)
+    logger.info("Default user initialized")
+
     yield
     # Shutdown
     logger.info("Shutting down Voice AI server...")
@@ -43,6 +51,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(transcription_router, prefix="/api", tags=["transcription"])
 app.include_router(history_router, prefix="/api", tags=["history"])
 

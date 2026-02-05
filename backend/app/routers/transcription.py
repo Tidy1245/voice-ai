@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import TranscriptionResponse, ModelsResponse, ModelInfo, get_db
 from ..services import TranscriptionService, HistoryService, get_model_loader
 from ..utils import compute_diff
+from .auth import get_current_user_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -18,6 +19,7 @@ async def transcribe_audio(
     model: str = Form(default="faster-whisper"),
     reference_text: Optional[str] = Form(default=None),
     db: AsyncSession = Depends(get_db),
+    user_id: Optional[int] = Depends(get_current_user_id),
 ):
     """
     Transcribe an uploaded audio file.
@@ -51,16 +53,20 @@ async def transcribe_audio(
         if reference_text:
             diff = compute_diff(reference_text, transcription)
 
-        # Save to history
-        history_service = HistoryService(db)
-        record = await history_service.create_record(
-            filename=audio.filename or "audio.wav",
-            model_used=model,
-            transcription=transcription,
-            duration=duration,
-            reference_text=reference_text,
-            diff=diff,
-        )
+        # Save to history only for logged-in users
+        record_id = None
+        if user_id is not None:
+            history_service = HistoryService(db)
+            record = await history_service.create_record(
+                filename=audio.filename or "audio.wav",
+                model_used=model,
+                transcription=transcription,
+                duration=duration,
+                reference_text=reference_text,
+                diff=diff,
+                user_id=user_id,
+            )
+            record_id = record.id
 
         return TranscriptionResponse(
             success=True,
@@ -68,7 +74,7 @@ async def transcribe_audio(
             duration=duration,
             model_used=model,
             diff=diff,
-            id=record.id,
+            id=record_id,
         )
 
     except Exception as e:

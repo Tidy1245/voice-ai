@@ -2,6 +2,91 @@ import type { TranscriptionResult, HistoryResponse, ModelsResponse, HistoryRecor
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+// Token storage
+const TOKEN_KEY = 'voice-ai-token';
+
+export function getStoredToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setStoredToken(token: string | null): void {
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+}
+
+function getAuthHeaders(): HeadersInit {
+  const token = getStoredToken();
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {};
+}
+
+// Auth API
+export interface LoginResponse {
+  success: boolean;
+  token?: string;
+  user?: {
+    id: number;
+    username: string;
+  };
+  message?: string;
+}
+
+export interface User {
+  id: number;
+  username: string;
+}
+
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const response = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!response.ok) {
+    throw new Error('Login failed');
+  }
+  const data = await response.json();
+  if (data.success && data.token) {
+    setStoredToken(data.token);
+  }
+  return data;
+}
+
+export async function logout(): Promise<void> {
+  const token = getStoredToken();
+  if (token) {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    }).catch(() => {});
+  }
+  setStoredToken(null);
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const token = getStoredToken();
+  if (!token) return null;
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/me`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      setStoredToken(null);
+      return null;
+    }
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+// Models API
 export async function getModels(): Promise<ModelsResponse> {
   const response = await fetch(`${API_BASE}/models`);
   if (!response.ok) {
@@ -10,6 +95,7 @@ export async function getModels(): Promise<ModelsResponse> {
   return response.json();
 }
 
+// Transcription API
 export async function transcribe(
   audio: File | Blob,
   model: string,
@@ -31,6 +117,7 @@ export async function transcribe(
 
   const response = await fetch(`${API_BASE}/transcribe`, {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData,
   });
 
@@ -42,8 +129,11 @@ export async function transcribe(
   return response.json();
 }
 
+// History API
 export async function getHistory(limit = 20, offset = 0): Promise<HistoryResponse> {
-  const response = await fetch(`${API_BASE}/history?limit=${limit}&offset=${offset}`);
+  const response = await fetch(`${API_BASE}/history?limit=${limit}&offset=${offset}`, {
+    headers: getAuthHeaders(),
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch history');
   }
@@ -51,7 +141,9 @@ export async function getHistory(limit = 20, offset = 0): Promise<HistoryRespons
 }
 
 export async function getHistoryById(id: number): Promise<HistoryRecord> {
-  const response = await fetch(`${API_BASE}/history/${id}`);
+  const response = await fetch(`${API_BASE}/history/${id}`, {
+    headers: getAuthHeaders(),
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch history record');
   }
@@ -61,6 +153,7 @@ export async function getHistoryById(id: number): Promise<HistoryRecord> {
 export async function deleteHistory(id: number): Promise<void> {
   const response = await fetch(`${API_BASE}/history/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     throw new Error('Failed to delete history record');
@@ -70,6 +163,7 @@ export async function deleteHistory(id: number): Promise<void> {
 export async function clearAllHistory(): Promise<{ count: number }> {
   const response = await fetch(`${API_BASE}/history`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     throw new Error('Failed to clear history');

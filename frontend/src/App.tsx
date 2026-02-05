@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageSwitch } from './components/LanguageSwitch';
+import { LoginPage } from './components/LoginPage';
 import { ModelSelector } from './components/ModelSelector';
 import { AudioUploader } from './components/AudioUploader';
 import { AudioRecorder } from './components/AudioRecorder';
@@ -18,6 +20,7 @@ const defaultModels: Model[] = [
 
 function AppContent() {
   const { t } = useLanguage();
+  const { user, isGuest, logout } = useAuth();
   const [models, setModels] = useState<Model[]>(defaultModels);
   const [selectedModel, setSelectedModel] = useState<ModelId>('faster-whisper');
   const [inputMode, setInputMode] = useState<InputMode>('upload');
@@ -110,7 +113,31 @@ function AppContent() {
                 <p className="text-sm text-gray-400">{t('header.subtitle')}</p>
               </div>
             </div>
-            <LanguageSwitch />
+            <div className="flex items-center gap-3">
+              <LanguageSwitch />
+              <div className="h-6 w-px bg-dark-600" />
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-300">{user.username}</span>
+                  <button
+                    onClick={logout}
+                    className="text-sm text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-dark-700 transition-colors"
+                  >
+                    {t('login.logout')}
+                  </button>
+                </div>
+              ) : isGuest ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-400">{t('header.guest')}</span>
+                  <button
+                    onClick={logout}
+                    className="text-sm text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-dark-700 transition-colors"
+                  >
+                    {t('login.logout')}
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </header>
@@ -227,22 +254,44 @@ function AppContent() {
             </div>
           </div>
 
-          {/* Right Panel - History */}
-          <div className="w-80 flex-shrink-0">
-            <div className="card h-[calc(100vh-160px)] sticky top-24">
-              <HistoryPanel onSelectRecord={handleSelectHistory} refreshTrigger={historyRefresh} />
+          {/* Right Panel - History (only for logged-in users) */}
+          {user && (
+            <div className="w-80 flex-shrink-0">
+              <div className="card h-[calc(100vh-160px)] sticky top-24">
+                <HistoryPanel onSelectRecord={handleSelectHistory} refreshTrigger={historyRefresh} />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
   );
 }
 
+function AuthenticatedApp() {
+  const { user, isGuest, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-dark-600 border-t-violet-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user && !isGuest) {
+    return <LoginPage />;
+  }
+
+  return <AppContent />;
+}
+
 function App() {
   return (
     <LanguageProvider>
-      <AppContent />
+      <AuthProvider>
+        <AuthenticatedApp />
+      </AuthProvider>
     </LanguageProvider>
   );
 }

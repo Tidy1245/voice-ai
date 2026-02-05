@@ -10,10 +10,63 @@ interface Translations {
 }
 
 const translations: Translations = {
+  // Login
+  'login.subtitle': {
+    zh: '語音辨識系統',
+    en: 'Speech Recognition System',
+  },
+  'login.username': {
+    zh: '帳號',
+    en: 'Username',
+  },
+  'login.usernamePlaceholder': {
+    zh: '輸入帳號',
+    en: 'Enter username',
+  },
+  'login.password': {
+    zh: '密碼',
+    en: 'Password',
+  },
+  'login.passwordPlaceholder': {
+    zh: '輸入密碼',
+    en: 'Enter password',
+  },
+  'login.submit': {
+    zh: '登入',
+    en: 'Sign In',
+  },
+  'login.loggingIn': {
+    zh: '登入中...',
+    en: 'Signing in...',
+  },
+  'login.error': {
+    zh: '帳號或密碼錯誤',
+    en: 'Invalid username or password',
+  },
+  'login.or': {
+    zh: '或',
+    en: 'or',
+  },
+  'login.guest': {
+    zh: '訪客登入',
+    en: 'Continue as Guest',
+  },
+  'login.guestHint': {
+    zh: '訪客模式不會保存歷史記錄',
+    en: 'Guest mode does not save history',
+  },
+  'login.logout': {
+    zh: '登出',
+    en: 'Sign Out',
+  },
   // Header
   'header.subtitle': {
     zh: '語音辨識系統',
     en: 'Speech Recognition System',
+  },
+  'header.guest': {
+    zh: '訪客',
+    en: 'Guest',
   },
   // Model Selector
   'model.select': {
