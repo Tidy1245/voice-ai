@@ -172,16 +172,16 @@ const translations: Translations = {
   },
   // Diff
   'diff.title': {
-    zh: '差異比對',
-    en: 'Difference Comparison',
+    zh: '比對結果',
+    en: 'Comparison Result',
   },
-  'diff.added': {
-    zh: '新增',
-    en: 'Added',
+  'diff.matched': {
+    zh: '正確',
+    en: 'Matched',
   },
-  'diff.removed': {
-    zh: '刪除',
-    en: 'Removed',
+  'diff.different': {
+    zh: '差異',
+    en: 'Different',
   },
   // History
   'history.title': {

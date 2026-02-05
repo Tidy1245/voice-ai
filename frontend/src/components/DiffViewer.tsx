@@ -19,11 +19,11 @@ export function DiffViewer({ diff }: DiffViewerProps) {
         <div className="flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 rounded bg-green-900/50 border border-green-700" />
-            <span className="text-gray-500">{t('diff.added')}</span>
+            <span className="text-gray-500">{t('diff.matched')}</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 rounded bg-red-900/50 border border-red-700" />
-            <span className="text-gray-500">{t('diff.removed')}</span>
+            <span className="text-gray-500">{t('diff.different')}</span>
           </span>
         </div>
       </div>
@@ -33,9 +33,8 @@ export function DiffViewer({ diff }: DiffViewerProps) {
             <span
               key={index}
               className={`
-                ${segment.type === 'insert' ? 'diff-insert px-0.5 rounded' : ''}
-                ${segment.type === 'delete' ? 'diff-delete px-0.5 rounded' : ''}
-                ${segment.type === 'equal' ? 'diff-equal' : ''}
+                ${segment.type === 'equal' ? 'diff-match px-0.5 rounded' : ''}
+                ${segment.type === 'insert' || segment.type === 'delete' ? 'diff-error px-0.5 rounded' : ''}
               `}
             >
               {segment.text}

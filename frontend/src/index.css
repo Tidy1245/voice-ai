@@ -88,14 +88,10 @@ body {
 }
 
 /* Diff styles */
-.diff-insert {
+.diff-match {
   @apply bg-green-900/50 text-green-300;
 }
 
-.diff-delete {
-  @apply bg-red-900/50 text-red-300 line-through;
-}
-
-.diff-equal {
-  @apply text-gray-300;
+.diff-error {
+  @apply bg-red-900/50 text-red-300;
 }
