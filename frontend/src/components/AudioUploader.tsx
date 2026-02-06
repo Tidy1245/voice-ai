@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface AudioUploaderProps {
@@ -11,7 +11,24 @@ interface AudioUploaderProps {
 export function AudioUploader({ onFileSelect, selectedFile, onClear, disabled }: AudioUploaderProps) {
   const { t } = useLanguage();
   const [isDragging, setIsDragging] = useState(false);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setAudioDuration(null);
+      return;
+    }
+    const url = URL.createObjectURL(selectedFile);
+    const audio = new Audio(url);
+    audio.addEventListener('loadedmetadata', () => {
+      setAudioDuration(audio.duration);
+      URL.revokeObjectURL(url);
+    });
+    audio.addEventListener('error', () => {
+      URL.revokeObjectURL(url);
+    });
+  }, [selectedFile]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -68,6 +85,12 @@ export function AudioUploader({ onFileSelect, selectedFile, onClear, disabled }:
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const formatDuration = (seconds: number): string => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}s`;
+  };
+
   if (selectedFile) {
     return (
       <div className="bg-dark-700 rounded-lg p-4 border border-dark-600">
@@ -90,7 +113,10 @@ export function AudioUploader({ onFileSelect, selectedFile, onClear, disabled }:
             </div>
             <div>
               <p className="text-white font-medium truncate max-w-[200px]">{selectedFile.name}</p>
-              <p className="text-sm text-gray-400">{formatFileSize(selectedFile.size)}</p>
+              <p className="text-sm text-gray-400">
+                {formatFileSize(selectedFile.size)}
+                {audioDuration != null && ` · ${formatDuration(audioDuration)}`}
+              </p>
             </div>
           </div>
           <button

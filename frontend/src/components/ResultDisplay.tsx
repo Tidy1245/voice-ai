@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { TranscriptionResult, DiffSegment } from '../types';
 import { DiffViewer } from './DiffViewer';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -17,15 +17,21 @@ export function ResultDisplay({ result, isLoading, referenceText, onDiffUpdate }
   const [isRecomparing, setIsRecomparing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [finalElapsed, setFinalElapsed] = useState<number | null>(null);
+  const wasLoading = useRef(false);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (isLoading) {
+      wasLoading.current = true;
       setElapsed(0);
-      return;
+      setFinalElapsed(null);
+      const timer = setInterval(() => setElapsed((s) => +(s + 0.1).toFixed(1)), 100);
+      return () => clearInterval(timer);
     }
-    setElapsed(0);
-    const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => clearInterval(timer);
+    if (wasLoading.current) {
+      setFinalElapsed(elapsed);
+      wasLoading.current = false;
+    }
   }, [isLoading]);
 
   // Auto-hide toast after 2 seconds
@@ -104,7 +110,7 @@ export function ResultDisplay({ result, isLoading, referenceText, onDiffUpdate }
           <div className="text-center">
             <p className="text-gray-300 font-medium">{t('result.processing')}</p>
             <p className="text-sm text-gray-500 mt-1">{t('result.wait')}</p>
-            <p className="text-sm text-violet-400 font-mono mt-2">{elapsed}s</p>
+            <p className="text-sm text-violet-400 font-mono mt-2">{elapsed.toFixed(1)}s</p>
           </div>
         </div>
       </div>
@@ -123,7 +129,7 @@ export function ResultDisplay({ result, isLoading, referenceText, onDiffUpdate }
           <span className={`px-2 py-1 rounded text-xs font-medium ${getModelBadgeColor(result.model_used)}`}>
             {result.model_used.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
           </span>
-          <span className="text-gray-500">{result.duration.toFixed(1)}s</span>
+          <span className="text-gray-500">{(finalElapsed ?? result.duration).toFixed(1)}s</span>
         </div>
       </div>
 
