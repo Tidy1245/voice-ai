@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 import logging
 from typing import Optional, Tuple, List, Dict
@@ -126,6 +127,7 @@ class TranscriptionService:
     def _transcribe_dolphin(self, model, audio_path: str, config: Dict) -> str:
         """Transcribe using Dolphin ASR model."""
         import dolphin
+        from opencc import OpenCC
 
         lang_sym = config.get("lang_sym", "zh")
         region_sym = config.get("region_sym", "MINNAN")
@@ -133,7 +135,9 @@ class TranscriptionService:
         waveform = dolphin.load_audio(audio_path)
         result = model(waveform, lang_sym=lang_sym, region_sym=region_sym)
 
-        return result.text.strip()
+        text = re.sub(r"<[^>]*>", "", result.text).strip()
+        text = OpenCC("s2t").convert(text)
+        return text
 
     async def save_uploaded_audio(self, audio_content: bytes, filename: str) -> str:
         """Save uploaded audio to a temporary file and return the path."""

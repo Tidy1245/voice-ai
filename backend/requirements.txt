@@ -19,5 +19,8 @@ pydub==0.25.1
 soundfile==0.12.1
 numpy==1.26.4
 
+# Chinese conversion
+OpenCC==1.1.9
+
 # Utilities
 python-dotenv==1.0.1
