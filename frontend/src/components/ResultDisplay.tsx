@@ -64,7 +64,18 @@ export function ResultDisplay({ result, isLoading, referenceText, onDiffUpdate }
   const handleCopy = async () => {
     if (!result?.transcription) return;
     try {
-      await navigator.clipboard.writeText(result.transcription);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(result.transcription);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = result.transcription;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {

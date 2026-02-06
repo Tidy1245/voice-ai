@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { HistoryRecord } from '../types';
+import type { HistoryRecord, DiffSegment } from '../types';
 import { getHistory, deleteHistory, clearAllHistory } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -95,6 +95,21 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
     });
   };
 
+  const calcSimilarity = (diff: DiffSegment[]): number => {
+    let matchedChars = 0;
+    let totalChars = 0;
+    diff.forEach((segment) => {
+      const charCount = segment.text.length;
+      if (segment.type === 'equal') {
+        matchedChars += charCount;
+        totalChars += charCount;
+      } else if (segment.type === 'insert' || segment.type === 'delete') {
+        totalChars += charCount;
+      }
+    });
+    return totalChars > 0 ? Math.round((matchedChars / totalChars) * 100) : 0;
+  };
+
   const getModelBadgeColor = (model: string): string => {
     switch (model) {
       case 'faster-whisper':
@@ -177,6 +192,15 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
                 <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getModelBadgeColor(record.model_used)}`}>
                   {record.model_used.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                 </span>
+                {record.diff && record.diff.length > 0 && (() => {
+                  const sim = calcSimilarity(record.diff);
+                  const color = sim >= 80 ? 'bg-green-600/20 text-green-300' : sim >= 50 ? 'bg-yellow-600/20 text-yellow-300' : 'bg-red-600/20 text-red-300';
+                  return (
+                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${color}`}>
+                      {sim}%
+                    </span>
+                  );
+                })()}
                 <span className="text-xs text-gray-500">{formatDate(record.created_at)}</span>
               </div>
             </div>
