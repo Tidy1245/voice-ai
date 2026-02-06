@@ -250,7 +250,12 @@ function AppContent() {
 
             {/* Result */}
             <div ref={resultRef}>
-              <ResultDisplay result={result} isLoading={isLoading} />
+              <ResultDisplay
+                result={result}
+                isLoading={isLoading}
+                referenceText={referenceText}
+                onDiffUpdate={(diff) => setResult(prev => prev ? { ...prev, diff } : null)}
+              />
             </div>
           </div>
 

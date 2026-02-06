@@ -1,16 +1,27 @@
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import TranscriptionResponse, ModelsResponse, ModelInfo, get_db
+from ..models import TranscriptionResponse, ModelsResponse, ModelInfo, DiffSegment, get_db
 from ..services import TranscriptionService, HistoryService, get_model_loader
 from ..utils import compute_diff
 from .auth import get_current_user_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+class DiffRequest(BaseModel):
+    reference_text: str
+    transcription: str
+
+
+class DiffResponse(BaseModel):
+    success: bool
+    diff: List[DiffSegment]
 
 
 @router.post("/transcribe", response_model=TranscriptionResponse)
@@ -105,3 +116,15 @@ async def health_check():
     Health check endpoint.
     """
     return {"status": "healthy"}
+
+
+@router.post("/diff", response_model=DiffResponse)
+async def compute_text_diff(request: DiffRequest):
+    """
+    Compute the difference between reference text and transcription.
+    """
+    diff = compute_diff(request.reference_text, request.transcription)
+    return DiffResponse(
+        success=True,
+        diff=[DiffSegment(**d) for d in diff] if diff else [],
+    )

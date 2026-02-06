@@ -162,6 +162,18 @@ const translations: Translations = {
     zh: '未偵測到語音',
     en: 'No speech detected',
   },
+  'result.recompare': {
+    zh: '重新比對',
+    en: 'Re-compare',
+  },
+  'result.recomparing': {
+    zh: '比對中...',
+    en: 'Comparing...',
+  },
+  'result.noReferenceText': {
+    zh: '請先輸入參考文字稿',
+    en: 'Please enter reference text first',
+  },
   'result.processing': {
     zh: '處理音訊中...',
     en: 'Processing audio...',

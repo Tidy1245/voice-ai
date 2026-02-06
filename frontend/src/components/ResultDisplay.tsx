@@ -1,16 +1,50 @@
-import { useState } from 'react';
-import type { TranscriptionResult } from '../types';
+import { useState, useEffect } from 'react';
+import type { TranscriptionResult, DiffSegment } from '../types';
 import { DiffViewer } from './DiffViewer';
 import { useLanguage } from '../contexts/LanguageContext';
+import { computeDiff } from '../services/api';
 
 interface ResultDisplayProps {
   result: TranscriptionResult | null;
   isLoading: boolean;
+  referenceText?: string;
+  onDiffUpdate?: (diff: DiffSegment[] | null) => void;
 }
 
-export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
+export function ResultDisplay({ result, isLoading, referenceText, onDiffUpdate }: ResultDisplayProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  const [isRecomparing, setIsRecomparing] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Auto-hide toast after 2 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const handleRecompare = async () => {
+    if (!result?.transcription) return;
+
+    if (!referenceText || !referenceText.trim()) {
+      setToast(t('result.noReferenceText'));
+      return;
+    }
+
+    setIsRecomparing(true);
+    try {
+      const response = await computeDiff(referenceText, result.transcription);
+      if (onDiffUpdate) {
+        onDiffUpdate(response.diff.length > 0 ? response.diff : null);
+      }
+    } catch (err) {
+      console.error('Failed to recompare:', err);
+    } finally {
+      setIsRecomparing(false);
+    }
+  };
 
   const getModelBadgeColor = (model: string): string => {
     switch (model) {
@@ -110,6 +144,40 @@ export function ResultDisplay({ result, isLoading }: ResultDisplayProps) {
               </>
             )}
           </button>
+
+          <button
+            onClick={handleRecompare}
+            disabled={isRecomparing}
+            className="text-sm flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-gray-400 hover:text-white bg-dark-700 hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isRecomparing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
+                {t('result.recomparing')}
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                {t('result.recompare')}
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
+          <div className="bg-dark-700 border border-dark-600 text-gray-200 px-4 py-2 rounded-lg shadow-lg">
+            {toast}
+          </div>
         </div>
       )}
 

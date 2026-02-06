@@ -95,3 +95,19 @@ body {
 .diff-error {
   @apply bg-red-900/50 text-red-300;
 }
+
+/* Toast animation */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in-up 0.3s ease-out forwards;
+}

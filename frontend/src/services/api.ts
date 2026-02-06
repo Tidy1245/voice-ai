@@ -179,3 +179,31 @@ export async function checkHealth(): Promise<boolean> {
     return false;
   }
 }
+
+// Diff API
+export interface DiffResponse {
+  success: boolean;
+  diff: { type: 'equal' | 'insert' | 'delete'; text: string }[];
+}
+
+export async function computeDiff(
+  referenceText: string,
+  transcription: string
+): Promise<DiffResponse> {
+  const response = await fetch(`${API_BASE}/diff`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      reference_text: referenceText,
+      transcription: transcription,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to compute diff');
+  }
+
+  return response.json();
+}
