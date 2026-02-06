@@ -45,6 +45,13 @@ MODELS_CONFIG = {
         "model_name": "formospeech/whisper-large-v3-taiwanese-hakka",
         "device": DEVICE,
     },
+    "dolphin-taiwanese": {
+        "type": "dolphin",
+        "model_size": "small",
+        "device": DEVICE,
+        "lang_sym": "zh",
+        "region_sym": "MINNAN",
+    },
 }
 
 MODEL_INFO = {
@@ -62,6 +69,11 @@ MODEL_INFO = {
         "id": "formospeech",
         "name": "FormoSpeech Hakka",
         "description": "Specialized for Hakka language",
+    },
+    "dolphin-taiwanese": {
+        "id": "dolphin-taiwanese",
+        "name": "Dolphin Taiwanese",
+        "description": "Taiwanese Hokkien speech recognition",
     },
 }
 
@@ -94,6 +106,8 @@ class ModelLoader:
         elif config["type"] == "transformers":
             model, processor = self._load_transformers(config)
             self._processors[model_id] = processor
+        elif config["type"] == "dolphin":
+            model = self._load_dolphin(config)
         else:
             raise ValueError(f"Unknown model type: {config['type']}")
 
@@ -141,6 +155,16 @@ class ModelLoader:
             model = model.cuda()
 
         return model, processor
+
+    def _load_dolphin(self, config: Dict[str, Any]):
+        import dolphin
+
+        model_size = config["model_size"]
+        device = config["device"]
+        logger.info(f"Loading Dolphin model (size={model_size}) on device: {device}")
+
+        model = dolphin.load_model(model_size, cache_dir=self._cache_dir, device=device)
+        return model
 
     def get_processor(self, model_id: str) -> Optional[Any]:
         return self._processors.get(model_id)

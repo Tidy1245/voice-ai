@@ -16,6 +16,7 @@ const defaultModels: Model[] = [
   { id: 'faster-whisper', name: 'Faster Whisper', description: 'General multilingual speech recognition' },
   { id: 'whisper-taiwanese', name: 'Whisper Taiwanese', description: 'Optimized for Taiwanese/Mandarin' },
   { id: 'formospeech', name: 'FormoSpeech Hakka', description: 'Specialized for Hakka language' },
+  { id: 'dolphin-taiwanese', name: 'Dolphin Taiwanese', description: 'Taiwanese Hokkien speech recognition' },
 ];
 
 function AppContent() {

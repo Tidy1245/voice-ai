@@ -86,6 +86,10 @@ const translations: Translations = {
     zh: '客家語專用',
     en: 'Specialized for Hakka language',
   },
+  'model.dolphin-taiwanese.desc': {
+    zh: '台灣閩南語語音辨識',
+    en: 'Taiwanese Hokkien speech recognition',
+  },
   // Audio Input
   'audio.upload': {
     zh: '上傳檔案',

@@ -40,4 +40,4 @@ export interface ModelsResponse {
 
 export type InputMode = 'upload' | 'record';
 
-export type ModelId = 'faster-whisper' | 'whisper-taiwanese' | 'formospeech';
+export type ModelId = 'faster-whisper' | 'whisper-taiwanese' | 'formospeech' | 'dolphin-taiwanese';

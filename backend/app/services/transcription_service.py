@@ -49,6 +49,8 @@ class TranscriptionService:
         elif config["type"] == "transformers":
             processor = self.model_loader.get_processor(model_id)
             transcription = self._transcribe_transformers(model, processor, audio_data, config)
+        elif config["type"] == "dolphin":
+            transcription = self._transcribe_dolphin(model, audio_path, config)
         else:
             raise ValueError(f"Unknown model type: {config['type']}")
 
@@ -120,6 +122,18 @@ class TranscriptionService:
         )[0]
 
         return transcription.strip()
+
+    def _transcribe_dolphin(self, model, audio_path: str, config: Dict) -> str:
+        """Transcribe using Dolphin ASR model."""
+        import dolphin
+
+        lang_sym = config.get("lang_sym", "zh")
+        region_sym = config.get("region_sym", "MINNAN")
+
+        waveform = dolphin.load_audio(audio_path)
+        result = model(waveform, lang_sym=lang_sym, region_sym=region_sym)
+
+        return result.text.strip()
 
     async def save_uploaded_audio(self, audio_content: bytes, filename: str) -> str:
         """Save uploaded audio to a temporary file and return the path."""

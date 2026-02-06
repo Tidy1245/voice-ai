@@ -103,6 +103,8 @@ export function HistoryPanel({ onSelectRecord, refreshTrigger }: HistoryPanelPro
         return 'bg-green-600/20 text-green-300';
       case 'formospeech':
         return 'bg-orange-600/20 text-orange-300';
+      case 'dolphin-taiwanese':
+        return 'bg-teal-600/20 text-teal-300';
       default:
         return 'bg-gray-600/20 text-gray-300';
     }
