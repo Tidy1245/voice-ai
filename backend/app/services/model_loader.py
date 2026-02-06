@@ -163,7 +163,8 @@ class ModelLoader:
         device = config["device"]
         logger.info(f"Loading Dolphin model (size={model_size}) on device: {device}")
 
-        model = dolphin.load_model(model_size, cache_dir=self._cache_dir, device=device)
+        model_dir = os.path.join(self._cache_dir, f"dolphin-{model_size}")
+        model = dolphin.load_model(model_size, model_dir, device)
         return model
 
     def get_processor(self, model_id: str) -> Optional[Any]:
