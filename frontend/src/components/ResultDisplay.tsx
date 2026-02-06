@@ -16,6 +16,17 @@ export function ResultDisplay({ result, isLoading, referenceText, onDiffUpdate }
   const [copied, setCopied] = useState(false);
   const [isRecomparing, setIsRecomparing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setElapsed(0);
+      return;
+    }
+    setElapsed(0);
+    const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, [isLoading]);
 
   // Auto-hide toast after 2 seconds
   useEffect(() => {
@@ -93,6 +104,7 @@ export function ResultDisplay({ result, isLoading, referenceText, onDiffUpdate }
           <div className="text-center">
             <p className="text-gray-300 font-medium">{t('result.processing')}</p>
             <p className="text-sm text-gray-500 mt-1">{t('result.wait')}</p>
+            <p className="text-sm text-violet-400 font-mono mt-2">{elapsed}s</p>
           </div>
         </div>
       </div>

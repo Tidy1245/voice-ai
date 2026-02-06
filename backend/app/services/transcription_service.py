@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import tempfile
 import logging
 from typing import Optional, Tuple, List, Dict
@@ -45,6 +46,8 @@ class TranscriptionService:
             resampler = torchaudio.transforms.Resample(sample_rate, 16000)
             audio_data = resampler(audio_tensor).squeeze().numpy()
 
+        start_time = time.time()
+
         if config["type"] == "faster-whisper":
             transcription = self._transcribe_faster_whisper(model, audio_path)
         elif config["type"] == "transformers":
@@ -55,7 +58,8 @@ class TranscriptionService:
         else:
             raise ValueError(f"Unknown model type: {config['type']}")
 
-        return transcription, duration
+        processing_time = time.time() - start_time
+        return transcription, processing_time
 
     def _transcribe_faster_whisper(self, model, audio_path: str) -> str:
         """Transcribe using faster-whisper model."""
