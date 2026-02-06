@@ -98,6 +98,14 @@ npx vite --host --port 9010
 | `CUDA_VISIBLE_DEVICES` | `0` | GPU device index |
 | `VITE_API_URL` | `http://localhost:8000/api` | Backend API URL (frontend) |
 
+## Audio Chunking
+
+Whisper 架構模型輸入上限為 30 秒。`TranscriptionService._chunk_audio()` 會將音訊切成 ≤30 秒的分段（480,000 samples @ 16kHz），逐段辨識後拼接結果。
+
+- **Faster-Whisper**: 內建自動分段，不需 chunk
+- **Transformers** (Whisper-Taiwanese / FormoSpeech Hakka): 透過 `_chunk_audio` 分段處理
+- **Dolphin**: 透過 `_chunk_audio` 分段處理，各段去 tag 後拼接，最後統一 OpenCC 簡轉繁
+
 ## Code Conventions
 
 - Follow TDD+DDD principles

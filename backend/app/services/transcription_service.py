@@ -3,7 +3,7 @@ import re
 import time
 import tempfile
 import logging
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List, Dict, Union
 
 import numpy as np
 import soundfile as sf
@@ -17,6 +17,23 @@ logger = logging.getLogger(__name__)
 class TranscriptionService:
     def __init__(self):
         self.model_loader = get_model_loader()
+
+    @staticmethod
+    def _chunk_audio(
+        audio: Union[np.ndarray, "torch.Tensor"],
+        max_samples: int = 30 * 16000,
+    ) -> list:
+        """Split audio into chunks of at most max_samples (default 30s at 16kHz)."""
+        total = audio.shape[0] if isinstance(audio, np.ndarray) else audio.size(-1)
+        if total <= max_samples:
+            return [audio]
+        chunks = []
+        for start in range(0, total, max_samples):
+            if isinstance(audio, np.ndarray):
+                chunks.append(audio[start : start + max_samples])
+            else:
+                chunks.append(audio[..., start : start + max_samples])
+        return chunks
 
     async def transcribe(
         self,
@@ -83,22 +100,6 @@ class TranscriptionService:
         """Transcribe using HuggingFace transformers model."""
         device = config["device"]
 
-        # Prepare input with attention mask
-        inputs = processor(
-            audio_data,
-            sampling_rate=16000,
-            return_tensors="pt",
-            return_attention_mask=True,
-        )
-
-        input_features = inputs.input_features
-        attention_mask = inputs.get("attention_mask", None)
-
-        # Explicitly move tensors to the correct device
-        input_features = input_features.to(device)
-        if attention_mask is not None:
-            attention_mask = attention_mask.to(device)
-
         # Determine language based on model
         model_name = config.get("model_name", "")
         if "taiwanese" in model_name.lower() or "zh-TW" in model_name:
@@ -108,25 +109,44 @@ class TranscriptionService:
         else:
             language = None  # Auto-detect
 
-        # Generate transcription
-        with torch.no_grad():
-            generate_kwargs = {
-                "input_features": input_features,
-                "task": "transcribe",
-            }
+        chunks = self._chunk_audio(audio_data)
+        results: List[str] = []
+
+        for chunk in chunks:
+            # Prepare input with attention mask
+            inputs = processor(
+                chunk,
+                sampling_rate=16000,
+                return_tensors="pt",
+                return_attention_mask=True,
+            )
+
+            input_features = inputs.input_features.to(device)
+            attention_mask = inputs.get("attention_mask", None)
             if attention_mask is not None:
-                generate_kwargs["attention_mask"] = attention_mask
-            if language:
-                generate_kwargs["language"] = language
+                attention_mask = attention_mask.to(device)
 
-            predicted_ids = model.generate(**generate_kwargs)
+            with torch.no_grad():
+                generate_kwargs = {
+                    "input_features": input_features,
+                    "task": "transcribe",
+                }
+                if attention_mask is not None:
+                    generate_kwargs["attention_mask"] = attention_mask
+                if language:
+                    generate_kwargs["language"] = language
 
-        transcription = processor.batch_decode(
-            predicted_ids,
-            skip_special_tokens=True,
-        )[0]
+                predicted_ids = model.generate(**generate_kwargs)
 
-        return transcription.strip()
+            text = processor.batch_decode(
+                predicted_ids,
+                skip_special_tokens=True,
+            )[0].strip()
+
+            if text:
+                results.append(text)
+
+        return "".join(results)
 
     def _transcribe_dolphin(self, model, audio_path: str, config: Dict) -> str:
         """Transcribe using Dolphin ASR model."""
@@ -137,11 +157,16 @@ class TranscriptionService:
         region_sym = config.get("region_sym", "MINNAN")
 
         waveform = dolphin.load_audio(audio_path)
-        result = model(waveform, lang_sym=lang_sym, region_sym=region_sym)
+        chunks = self._chunk_audio(waveform)
+        results: List[str] = []
 
-        text = re.sub(r"<[^>]*>", "", result.text).strip()
-        text = OpenCC("s2t").convert(text)
-        return text
+        for chunk in chunks:
+            result = model(chunk, lang_sym=lang_sym, region_sym=region_sym)
+            text = re.sub(r"<[^>]*>", "", result.text).strip()
+            if text:
+                results.append(text)
+
+        return OpenCC("s2t").convert("".join(results))
 
     async def save_uploaded_audio(self, audio_content: bytes, filename: str) -> str:
         """Save uploaded audio to a temporary file and return the path."""
